@@ -12,8 +12,11 @@ Grade Book Application
 3. Register student for course
 4. Calculate ranking
 5. Search by grade
-6. Generate transcript
-7. Exit
+6. Generate transcripts
+7. View student list
+8. view course list
+9. Update student details
+10. Exit
 Enter your choice: 1
 Enter student email: tawekelvin1@gmail.com 
 Enter student names: John Doe
@@ -33,5 +36,5 @@ Student registered for course successfully.
 
 Enter your choice: 4
 Student Rankings:
-John Doe (tawekelvin1@gmail.com): GPA = 3.00
+tawe kelvin (tawekelvin1@gmail.com): GPA = 3.00
 
