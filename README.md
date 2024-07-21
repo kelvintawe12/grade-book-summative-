@@ -15,7 +15,7 @@ Grade Book Application
 6. Generate transcript
 7. Exit
 Enter your choice: 1
-Enter student email: john.doe@example.com
+Enter student email: tawekelvin1@gmail.com 
 Enter student names: John Doe
 Student added successfully.
 
@@ -26,12 +26,12 @@ Enter course credits: 3
 Course added successfully.
 
 Enter your choice: 3
-Enter student email: john.doe@example.com
+Enter student email: tawekelvin1@gmail.com 
 Enter course name: Math 101
 Enter grade: 88
 Student registered for course successfully.
 
 Enter your choice: 4
 Student Rankings:
-John Doe (john.doe@example.com): GPA = 3.00
+John Doe (tawekelvin1@gmail.com): GPA = 3.00
 
