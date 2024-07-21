@@ -1,107 +1,134 @@
 #!/usr/bin/python3
+import json
 from student import Student
 from course import Course
+from tabulate import tabulate
 
 class GradeBook:
     """
-    A class to manage student records and course registrations.
-
-    Attributes:
-        student_list (list): A list of all students in the grade book.
-        course_list (list): A list of all courses available in the grade book.
+    Manages students, courses, and their registrations.
     """
-
-    def __init__(self):
-        """
-        Initializes an empty grade book with no students or courses.
-        """
-        self.student_list = []
-        self.course_list = []
     
+    def __init__(self):
+        self.student_list = {}
+        self.course_list = {}
+        self.load_data()
+        self.update_student_list_file()  # Ensure the file is created/updated at initialization
+        self.update_course_list_file()   # Ensure the file is created/updated at initialization
+
     def add_student(self, student):
         """
-        Adds a new student to the grade book.
-
-        Args:
-            student (Student): The student object to be added.
+        Add a new student to the grade book.
         """
-        self.student_list.append(student)
-    
+        self.student_list[student.email] = student
+        self.save_data()
+        self.update_student_list_file()
+
     def add_course(self, course):
         """
-        Adds a new course to the grade book.
+        Add a new course to the grade book.
+        """
+        self.course_list[course.name] = course
+        self.save_data()
+        self.update_course_list_file()
 
-        Args:
-            course (Course): The course object to be added.
+    def register_student_for_course(self, student_email, course_name, grade, credits):
         """
-        self.course_list.append(course)
-    
-    def register_student_for_course(self, student_email, course_name, grade):
+        Register a student for a course with a given grade and credits.
         """
-        Registers a student for a course and records their grade.
+        if student_email in self.student_list and course_name in self.course_list:
+            student = self.student_list[student_email]
+            student.register_for_course(course_name, grade, credits)
+            self.save_data()
+            self.update_student_list_file()
 
-        Args:
-            student_email (str): The email address of the student.
-            course_name (str): The name of the course.
-            grade (float): The grade received in the course.
-        """
-        student = next((s for s in self.student_list if s.email == student_email), None)
-        course = next((c for c in self.course_list if c.name == course_name), None)
-        
-        if student and course:
-            student.register_for_course(course_name, grade, course.credits)
-        else:
-            print("Student or Course not found.")
-    
     def calculate_GPA(self):
         """
-        Calculates the GPA for all students in the grade book.
+        Update GPA for all students.
         """
-        for student in self.student_list:
+        for student in self.student_list.values():
             student.calculate_GPA()
-    
+        self.save_data()
+
     def calculate_ranking(self):
         """
-        Calculates and returns a ranked list of students based on their GPA.
-
-        Returns:
-            list: A list of students sorted by GPA in descending order.
+        Calculate and return a ranking of students by GPA.
         """
-        sorted_students = sorted(self.student_list, key=lambda s: s.GPA, reverse=True)
-        return sorted_students
-    
+        return sorted(self.student_list.values(), key=lambda s: s.GPA, reverse=True)
+
     def search_by_grade(self, course_name, grade_range):
         """
-        Searches for students who obtained grades within a specific range in a course.
-
-        Args:
-            course_name (str): The name of the course.
-            grade_range (tuple): A tuple containing the lower and upper bounds of the grade range.
-
-        Returns:
-            list: A list of students who obtained grades within the specified range.
+        Search students by their grades in a specific course.
         """
-        lower, upper = grade_range
-        students = [s for s in self.student_list if s.courses_registered.get(course_name, (0, 0))[0] in range(lower, upper+1)]
-        return students
-    
+        result = []
+        for student in self.student_list.values():
+            if course_name in student.courses_registered:
+                grade, _ = student.courses_registered[course_name]
+                if grade_range[0] <= grade <= grade_range[1]:
+                    result.append(student)
+        return result
+
     def generate_transcript(self, student_email):
         """
-        Generates a transcript for a student, showing their GPA and course details.
-
-        Args:
-            student_email (str): The email address of the student.
-
-        Returns:
-            str: The transcript for the student.
+        Generate and return a transcript for a student.
         """
-        student = next((s for s in self.student_list if s.email == student_email), None)
+        student = self.student_list.get(student_email)
         if student:
-            transcript = f"\033[1;34mTranscript for {student.names} ({student.email}):\033[0m\n"
-            transcript += f"\033[1;32mGPA: {student.GPA:.2f}\033[0m\n"
-            transcript += "\033[1;36mCourses Registered:\033[0m\n"
+            transcript = f"Transcript for {student.names} ({student.email}):\n"
             for course, (grade, credits) in student.courses_registered.items():
-                transcript += f"Course: {course}, Grade: {grade}, Credits: {credits}\n"
+                transcript += f"- {course}: Grade = {grade}, Credits = {credits}\n"
+            transcript += f"GPA = {student.GPA:.2f}"
             return transcript
-        else:
-            return "Student not found."
+        return "Student not found."
+
+    def save_data(self):
+        """
+        Save student and course data to files.
+        """
+        with open('students.json', 'w') as f:
+            json.dump({email: student.to_dict() for email, student in self.student_list.items()}, f)
+        with open('courses.json', 'w') as f:
+            json.dump({name: vars(course) for name, course in self.course_list.items()}, f)
+
+    def load_data(self):
+        """
+        Load student and course data from files.
+        """
+        try:
+            with open('students.json', 'r') as f:
+                students_data = json.load(f)
+                self.student_list = {email: Student.from_dict(data) for email, data in students_data.items()}
+        except FileNotFoundError:
+            self.student_list = {}
+
+        try:
+            with open('courses.json', 'r') as f:
+                courses_data = json.load(f)
+                self.course_list = {name: Course(**data) for name, data in courses_data.items()}
+        except FileNotFoundError:
+            self.course_list = {}
+
+    def update_student_list_file(self):
+        """
+        Update the file that lists students and their details.
+        """
+        student_data = [
+            [student.email, student.names, course, grade, credits]
+            for student in self.student_list.values()
+            for course, (grade, credits) in student.courses_registered.items()
+        ]
+        headers = ["Email", "Name", "Course", "Grade", "Credits"]
+        with open('student_list.txt', 'w') as f:
+            f.write(tabulate(student_data, headers=headers, tablefmt="grid"))
+
+    def update_course_list_file(self):
+        """
+        Update the file that lists available courses.
+        """
+        course_data = [
+            [course.name, course.trimester, course.credits]
+            for course in self.course_list.values()
+        ]
+        headers = ["Course Name", "Trimester", "Credits"]
+        with open('course_list.txt', 'w') as f:
+            f.write(tabulate(course_data, headers=headers, tablefmt="grid"))

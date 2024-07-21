@@ -2,52 +2,50 @@
 
 class Student:
     """
-    A class to represent a student.
-
-    Attributes:
-        email (str): The email address of the student.
-        names (str): The full name of the student.
-        courses_registered (dict): A dictionary of courses with associated grades and credits.
-        GPA (float): The calculated Grade Point Average of the student.
+    Represents a student with an email, names, registered courses, and GPA.
     """
-
+    
     def __init__(self, email, names):
-        """
-        Initializes a new student with the given email and names.
-
-        Args:
-            email (str): The email address of the student.
-            names (str): The full name of the student.
-        """
         self.email = email
         self.names = names
-        self.courses_registered = {}  # Dictionary to store course names and grades
-        self.GPA = 0.0
-    
+        self.courses_registered = {}  # {course_name: (grade, credits)}
+        self.GPA = 0
+
+    def register_for_course(self, course_name, grade, credits):
+        """
+        Register a grade and credits for a course.
+        """
+        self.courses_registered[course_name] = (grade, credits)
+        self.calculate_GPA()
+
     def calculate_GPA(self):
         """
-        Calculates and updates the GPA based on registered courses and grades.
+        Calculate GPA based on registered courses.
         """
-        if not self.courses_registered:
-            self.GPA = 0.0
-            return
-        
         total_points = 0
         total_credits = 0
-        for course, (grade, credits) in self.courses_registered.items():
+        for grade, credits in self.courses_registered.values():
             total_points += grade * credits
             total_credits += credits
-        
-        self.GPA = total_points / total_credits
-    
-    def register_for_course(self, course, grade, credits):
-        """
-        Registers the student for a course with a given grade and credits.
+        self.GPA = total_points / total_credits if total_credits > 0 else 0
 
-        Args:
-            course (str): The name of the course.
-            grade (float): The grade received in the course.
-            credits (int): The number of credits for the course.
+    def to_dict(self):
         """
-        self.courses_registered[course] = (grade, credits)
-        self.calculate_GPA()
+        Convert student data to a dictionary for easy saving.
+        """
+        return {
+            'email': self.email,
+            'names': self.names,
+            'courses_registered': self.courses_registered,
+            'GPA': self.GPA
+        }
+
+    @staticmethod
+    def from_dict(data):
+        """
+        Create a Student instance from a dictionary.
+        """
+        student = Student(data['email'], data['names'])
+        student.courses_registered = data['courses_registered']
+        student.GPA = data['GPA']
+        return student
