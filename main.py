@@ -86,8 +86,8 @@ def main():
         choice = input("Enter your choice: ")
         
         if choice == "1":
-            email = input("Enter student email: ")
-            names = input("Enter student names: ")
+            email = input("Enter student's email: ")
+            names = input("Enter student's names: ")
             student = Student(email, names)
             gradebook.add_student(student)
             print(f"{OKGREEN}Student added successfully.{ENDC}")
@@ -95,18 +95,19 @@ def main():
         
         elif choice == "2":
             name = input("Enter course name: ")
-            trimester = input("Enter trimester: ")
+            trimester = input("Enter trimester(eg May 2024): ")
             credits = float(input("Enter course credits: "))
             course = Course(name, trimester, credits)
             gradebook.add_course(course)
+            print()
             print(f"{OKGREEN}Course added successfully.{ENDC}")
             gradebook.update_course_list_file()
         
         elif choice == "3":
             student_email = input("Enter student email: ")
             course_name = input("Enter course name: ")
-            grade = float(input("Enter grade: "))
-            credits = float(input("Enter credits: "))
+            grade = float(input("Enter course grade: "))
+            credits = float(input("Enter course credits: "))
             gradebook.register_student_for_course(student_email, course_name, grade, credits)
             print(f"{OKGREEN}Student grades registered successfully.{ENDC}")
             gradebook.update_student_list_file()
